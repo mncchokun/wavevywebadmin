@@ -1,0 +1,437 @@
+/* Custom Fonts and Background */
+body {
+    font-family: 'Kanit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f0f2f5 0%, #d6e0f0 100%);
+}
+
+/* --- [แก้ไขส่วนนี้] Header (Deep Blue Gradient + Background Image) --- */
+.dashboard-header {
+    /* 1. ใส่รูปภาพพื้นหลัง (เปลี่ยน URL ใน url() เป็นลิงก์รูปที่คุณต้องการ) */
+    /* 2. ใช้ linear-gradient ทับหน้าเพื่อทำเป็นฟิลเตอร์สีน้ำเงินเข้มเหมือนในรูปตัวอย่าง */
+    background: linear-gradient(180deg, rgba(19, 42, 82, 0.85) 0%, rgba(30, 60, 114, 0.9) 100%), 
+                url('https://img1.pic.in.th/images/631288512_122110164591202876_5084502370065461059_n.png'); /* เปลี่ยนเป็น URL ภาพพื้นหลังของคุณ */
+    
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    
+    padding: 50px 20px !important; /* เพิ่ม Padding ให้สูงขึ้นเหมือนในรูป */
+    position: relative;
+    border-bottom: 5px solid #ffc107; /* เส้นขอบสีทองด้านล่าง */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    text-align: center;
+}
+
+/* Title Styling */
+.header-title {
+    font-size: 2.5rem; /* ขยายขนาดตัวหนาๆ */
+    font-weight: 800;
+    color: #ffffff;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.6); /* เพิ่มเงาให้ตัวหนังสือลอยเด่น */
+    margin-bottom: 5px;
+}
+
+/* Subtitle / Credit Styling */
+.header-credit {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* ปรับปุ่มออกจากระบบ (Logout) */
+#logoutButton {
+    background-color: #ff4b2b;
+    border: none;
+    padding: 8px 15px;
+    font-weight: bold;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    transition: 0.3s;
+}
+
+#logoutButton:hover {
+    background-color: #ff416c;
+    transform: scale(1.05);
+}
+
+/* --- ส่วนอื่นๆ คงเดิมตามที่คุณตั้งค่าไว้ --- */
+.menu-column-wrapper {
+    max-width: 250px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+/* ----------------------------------------------------------- */
+
+
+/* Nav Pills/Category Tabs (Separation & Color) */
+.nav-pills .nav-link {
+    font-weight: bold;
+    color: #333;
+    background-color: #f8f9fa; /* Light background for clear separation */
+    
+    /* === [ การแก้ไข: ปุ่มกว้าง 85% และจัดให้อยู่กึ่งกลาง Box ] === */
+    width: 85%; /* ลดความกว้างของปุ่มเพื่อจัดกึ่งกลาง */
+    margin: 0 auto 25px auto; /* จัดกึ่งกลางปุ่ม (ซ้าย-ขวา) และเว้นระยะด้านล่าง 25px */
+    text-align: center; /* จัดข้อความกึ่งกลางภายในปุ่ม */
+    box-shadow: none; /* ลบเงาสำหรับปุ่มที่ไม่ได้ถูกเลือก (Inactive) */
+    /* =========================================================== */
+    
+    border-radius: 10px;
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.nav-pills .nav-link:hover {
+    background-color: #e9ecef;
+}
+
+/* Base Active Style (Minimal, since specific colors override this) */
+.nav-pills .nav-link.active {
+    color: #fff;
+    /* BACKGROUND ถูกกำหนดด้วย Gradient ในโค้ดเฉพาะด้านล่าง */
+    background-color: transparent !important; /* ตั้งค่าเป็น transparent เพื่อให้ Gradient ด้านล่างแสดงผล */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3) !important; 
+    border: none;
+    transform: translateY(-2px); /* Slight lift effect */
+}
+
+/* --- Custom Active Colors & Gradient for Specific Tabs --- */
+
+/* Template 0: RESTART SERVER - Red Gradient */
+.nav-pills .nav-link[data-bs-target="#tab-0"].active {
+    background: linear-gradient(135deg, #ffda73 0%, #ffc107 70%, #d4a000 100%) !important;
+    color: #333333 !important;
+    border-color: #ffc107 !important;
+}
+
+/* Template 1: OPEN SERVER - Green Gradient */
+.nav-pills .nav-link[data-bs-target="#tab-1"].active {
+    background: linear-gradient(135deg, #ff4d4d 0%, #dc3545 70%, #a02731 100%) !important;
+    border-color: #dc3545 !important;
+    color: #fff !important;
+}
+
+/* Template 2: MAINTAINANCE - Orange Gradient */
+.nav-pills .nav-link[data-bs-target="#tab-2"].active {
+    background: linear-gradient(135deg, #36b353 0%, #28a745 70%, #1e8335 100%) !important;
+    border-color: #28a745 !important;
+    color: #fff !important;
+}
+
+/* Template 3: 𝗙𝗔𝗥𝗠 𝗣𝗔𝗖𝗞𝗔𝗚𝗘 - Dark Blue Gradient */
+.nav-pills .nav-link[data-bs-target="#tab-3"].active {
+    background: linear-gradient(135deg, #67ab00 0%, #169300 70%, #3cb300 100%) !important;
+    border-color: #51a200 !important;
+    color: #fff !important;
+}
+
+/* Template 4: VIP - Purple Gradient */
+.nav-pills .nav-link[data-bs-target="#tab-4"].active {
+    background: linear-gradient(135deg, #ea804b 0%, #ff961e 70%, #ff8000 100%) !important;
+    border-color: #ff7b00 !important;
+    color: #fff !important;
+}
+
+/* Template 5: ค่าปรับ - Dark Red Gradient */
+.nav-pills .nav-link[data-bs-target="#tab-5"].active {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 70%, #902c21 100%) !important;
+    border-color: #c0392b !important;
+    color: #fff !important;
+}
+
+/* Template 6: โทษใบเหลือง - แดง - Orangeish Gradient */
+.nav-pills .nav-link[data-bs-target="#tab-6"].active {
+    background: linear-gradient(135deg, #f7b446 0%, #f39c12 70%, #c57e0a 100%) !important;
+    border-color: #f39c12 !important;
+    color: #333333 !important;
+}
+
+/* Template 7: โทษใบแดงไม่รีใบ - Strong Red Gradient */
+.nav-pills .nav-link[data-bs-target="#tab-7"].active {
+    background: linear-gradient(135deg, #ff6655 0%, #e74c3c 70%, #b83d30 100%) !important;
+    border-color: #e74c3c !important;
+    color: #fff !important;
+}
+
+/* --- NEW: Template 8: ประกาศตามตัว - Pink Gradient --- */
+.nav-pills .nav-link[data-bs-target="#tab-8"].active { /* Index 8 สำหรับ ประกาศตามตัว */
+    background: linear-gradient(135deg, #ff69b4 0%, #ff1493 70%, #c71585 100%) !important; /* Pink Gradient (Hot Pink) */
+    border-color: #ff1493 !important;
+    color: #fff !important;
+}
+
+/* --- NEW: Template 8: ประกาศตามตัว - Pink Gradient --- */
+.nav-pills .nav-link[data-bs-target="#tab-9"].active { /* Index 8 สำหรับ ประกาศตามตัว */
+    background: linear-gradient(135deg, #949494 0%, #797979 70%, #5a5a5a 100%) !important; /* Pink Gradient (Hot Pink) */
+    border-color: #5c5c5c !important;
+    color: #fff !important;
+}
+
+/* --- NEW: Template 8: ประกาศตามตัว - Pink Gradient --- */
+.nav-pills .nav-link[data-bs-target="#tab-10"].active { /* Index 8 สำหรับ ประกาศตามตัว */
+    background: linear-gradient(135deg, #ff8989 0%, #ff5555 70%, #ff3535 100%) !important; /* Pink Gradient (Hot Pink) */
+    border-color: #ff1d1d !important;
+    color: #fff !important;
+}
+
+/* --- NEW: Template 8: ประกาศตามตัว - Pink Gradient --- */
+.nav-pills .nav-link[data-bs-target="#tab-11"].active { /* Index 8 สำหรับ ประกาศตามตัว */
+    background: linear-gradient(135deg, #fffd8c 0%, #fffd70 70%, #ffee2f 100%) !important; /* Pink Gradient (Hot Pink) */
+    border-color: #f0ff1d !important;
+    color: #000000 !important;
+}
+
+/* --- NEW: Template 8: ประกาศตามตัว - Pink Gradient --- */
+.nav-pills .nav-link[data-bs-target="#tab-12"].active { /* Index 8 สำหรับ ประกาศตามตัว */
+    background: linear-gradient(135deg, #ffb7f3 0%, #ff70f1 70%, #ff2fb3 100%) !important; /* Pink Gradient (Hot Pink) */
+    border-color: #ff1d8e !important;
+    color: #fff !important;
+}
+
+/* --- NEW: Template 8: ประกาศตามตัว - Pink Gradient --- */
+.nav-pills .nav-link[data-bs-target="#tab-13"].active { /* Index 8 สำหรับ ประกาศตามตัว */
+    background: linear-gradient(135deg, #fffd8c 0%, #70e0ff 70%, #ffee2f 100%) !important; /* Pink Gradient (Hot Pink) */
+    border-color: #f0ff1d !important;
+    color: #000000 !important;
+}
+
+/* --- NEW: Template 8: ประกาศตามตัว - Pink Gradient --- */
+.nav-pills .nav-link[data-bs-target="#tab-14"].active { /* Index 8 สำหรับ ประกาศตามตัว */
+    background: linear-gradient(135deg, #0c4700 0%, #00d62b 70%, #78ff7d 100%) !important; /* Pink Gradient (Hot Pink) */
+    border-color: #00d62b !important;
+    color: #fff !important;
+}
+
+
+/* Card Styling */
+.card {
+    border: none;
+    border-radius: 15px;
+    background: #ffffff;
+    transition: transform 0.3s ease;
+}
+
+.card-header {
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    /* สไตล์สีเทาเดิมถูกลบออก เพื่อให้ใช้ Gradient */
+    color: #fff; /* ตั้งค่าสีตัวอักษรเป็นสีขาวเพื่อให้เข้ากับ Gradient ส่วนใหญ่ */
+    font-weight: bold;
+}
+
+/* --- UPDATED: Gradient for Card Headers (Template Announcements) --- */
+/* Template 0: RESTART SERVER - Red Gradient (เข้มขึ้น) */
+.card-header[data-template="0"] {
+    background: linear-gradient(180deg, #ff6b6b 0%, #b32d39 100%); /* สว่าง-เข้ม */
+}
+
+/* Template 1: OPEN SERVER - Green Gradient (เข้มขึ้น) */
+.card-header[data-template="1"] {
+    background: linear-gradient(180deg, #4cd16a 0%, #1e8335 100%); /* สว่าง-เข้ม */
+}
+
+/* Template 2: MAINTAINANCE - Orange Gradient (เข้มขึ้น) */
+.card-header[data-template="2"] {
+    background: linear-gradient(180deg, #ffd352 0%, #d4a000 100%); /* สว่าง-เข้ม */
+    color: #333; /* เปลี่ยนสีตัวอักษรเป็นดำเพราะพื้นหลังสว่าง */
+}
+
+/* Template 3: 𝗙𝗔𝗥𝗠 𝗣𝗔𝗖𝗞𝗔𝗚𝗘 - Dark Blue Gradient (เข้มขึ้น) */
+.card-header[data-template="3"] {
+    background: linear-gradient(180deg, #37a0f0 0%, #0056b3 100%); /* สว่าง-เข้ม */
+}
+
+/* Template 4: VIP - Purple Gradient (เข้มขึ้น) */
+.card-header[data-template="4"] {
+    background: linear-gradient(180deg, #8e44ad 0%, #50318c 100%); /* สว่าง-เข้ม */
+}
+
+/* Template 5: ค่าปรับ - Dark Red Gradient (เข้มขึ้น) */
+.card-header[data-template="5"] {
+    background: linear-gradient(180deg, #e74c3c 0%, #902c21 100%); /* สว่าง-เข้ม */
+}
+
+/* Template 6: โทษใบเหลือง - แดง - Orangeish Gradient (เข้มขึ้น) */
+.card-header[data-template="6"] {
+    background: linear-gradient(180deg, #f8c471 0%, #c57e0a 100%); /* สว่าง-เข้ม */
+    color: #333; /* เปลี่ยนสีตัวอักษรเป็นดำเพราะพื้นหลังสว่าง */
+}
+
+/* Template 7: โทษใบแดงไม่รีใบ - Strong Red Gradient (เข้มขึ้น) */
+.card-header[data-template="7"] {
+    background: linear-gradient(180deg, #ff6655 0%, #b83d30 100%); /* สว่าง-เข้ม */
+}
+
+/* --- NEW: Template 8: ประกาศตามตัว - Pink Gradient --- */
+.card-header[data-template="8"] { /* Index 8 สำหรับ ประกาศตามตัว */
+    background: linear-gradient(180deg, #ff69b4 0%, #c71585 100%); /* สว่าง-เข้ม (Pink) */
+}
+
+
+/* Form Styling */
+.form-control, .form-select {
+    border-radius: 8px;
+    padding: 10px 15px;
+    transition: border-color 0.3s;
+    border: 2px solid #ced4da;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #5865f2;
+    box-shadow: 0 0 0 0.25rem rgba(88, 101, 242, 0.25);
+}
+
+/* * NEW: Gradient Styling for Bootstrap Info Buttons (.btn-info)
+ * ใช้สำหรับปุ่ม 'สุ่มตัวเลข Lucky ID' - ปรับให้ Gradient ชัดและพุ่งมากขึ้น (เฉียง)
+ */
+.btn-info {
+    /* 1. Base Gradient (จากสีฟ้าสดใสของ Info ไปสีน้ำเงินอ่อน) */
+    background: linear-gradient(135deg, #00bfff 0%, #17a2b8 60%, #106c7c 100%); /* เพิ่มจุดหยุดสี และเริ่มด้วยสีสว่างสุด */ 
+    border: none;
+    color: white; 
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 10px 15px;
+    
+    /* 2. 3D Lift Effect */
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.1);
+    
+    /* 3. เตรียมสำหรับ Gradient Shift Hover Effect */
+    background-size: 200% 100%;
+    background-position: 100% 0;
+    
+    /* 4. Transition */
+    transition: background-position 0.5s ease, transform 0.1s, box-shadow 0.1s;
+}
+
+.btn-info:hover {
+    /* 1. Gradient Shift */
+    background-position: 0% 0;
+    
+    /* 2. 3D Press Effect */
+    transform: translateY(2px); 
+    
+    /* 3. ลดความหนาของ Shadow */
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2), 0 1px 4px rgba(0, 0, 0, 0.1); 
+}
+
+/* * แก้ไข: Gradient Styling for Discord Button (.btn-send)
+ * ใช้สำหรับปุ่ม 'ส่งไปยัง DISCORD' - ปรับให้ Gradient ชัดเจน (เฉียง)
+ */
+.btn-send {
+    /* แทนที่โค้ดเดิมทั้งหมด */
+    background: linear-gradient(45deg, #7289da 0%, #5865f2 70%, #4f5b93 100%); /* เพิ่มจุดหยุดสี ให้สีเข้มมาปิดท้าย */
+    border: none;
+    color: white;
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 10px 15px;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.1);
+    background-size: 200% 100%;
+    background-position: 100% 0;
+    transition: background-position 0.5s ease, transform 0.1s, box-shadow 0.1s;
+}
+
+.btn-send:hover {
+    background-position: 0% 0;
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2), 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Background Effect (Vibrant/RGB feel with soft blurs) */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at top right, rgba(255, 105, 180, 0.2) 0%, transparent 30%), /* Pink/Magenta */
+                radial-gradient(circle at bottom left, rgba(0, 255, 255, 0.2) 0%, transparent 30%), /* Cyan/Blue */
+                radial-gradient(circle at center, rgba(255, 255, 0, 0.05) 0%, transparent 50%); /* Subtle Yellow */
+    z-index: -1;
+    opacity: 0.7;
+}
+
+/* Discord Mockup Styling */
+.discord-mockup {
+    background-color: #2f3136; /* Discord Dark Theme Background */
+}
+
+.discord-header {
+    background-color: #202225;
+    border-bottom: 2px solid #5865f2;
+}
+
+.discord-body {
+    background-color: #2f3136;
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.discord-embed {
+    background-color: #202225;
+    border-left: 4px solid; /* Color will be set by JS */
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    color: #dcddde;
+    font-size: 0.9em;
+}
+
+.embed-author {
+    font-weight: bold;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+.embed-author img {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+.embed-title {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #ffffff;
+}
+.embed-description {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    /* Styling for markdown within description */
+}
+.embed-description strong {
+    color: #f0f0f0;
+}
+.embed-description h4 { /* For ### headings */
+    color: #5865f2;
+    font-size: 1em;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.embed-thumbnail {
+    float: right;
+    max-width: 60px;
+    max-height: 60px;
+    border-radius: 3px;
+    margin-left: 10px;
+}
+
+.embed-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+
+
+/* Uncomment the line below if you want to hide the live preview completely */
+/* .discord-mockup { display: none; } */

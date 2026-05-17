@@ -1,0 +1,332 @@
+const express = require('express');
+const session = require('express-session');
+const path = require('path');
+const fs = require('fs');
+// ต้องมีการติดตั้ง: npm install axios
+const axios = require('axios'); 
+
+const app = express();
+const port = 3000;
+
+// *********************************************************
+// *** การตั้งค่า Webhook Discord (แยก URL ตามประเภท) ***
+// *********************************************************
+const WEBHOOK_URLS = {
+    LOGIN_SUCCESS: 'https://discord.com/api/webhooks/1428877009647435858/lKqrWwzfNERGGn2gMRNeX1uXUJhN-JGmaBH9utTiSvyumDyW663rz4VK8_6gJ_atM1Cs',
+    LOGOUT: 'https://discord.com/api/webhooks/1428886817762967612/WUuzQrpMrkDLgg713Xk7PgDz3-LPDUNvUryc9Mj1snfcmQbfvMmcJHrG-S8u_QxMUaIS',
+    LOGIN_FAILURE: 'https://discord.com/api/webhooks/1428886847026892882/JETi3y5pekgFrWRqvi8iBHuXYYejX42V-UhX82jU1dcTwQE8aO6_bHaQwHeOe3so7CVr',
+};
+
+// ใช้ Decimal Color Code สำหรับ Discord Embed
+const COLORS = {
+    SUCCESS: 65280,   // Green: 0x00FF00 -> 65280
+    FAILURE: 16711680, // Red: 0xFF0000 -> 16711680
+    LOGOUT: 255,      // Blue: 0x0000FF -> 255
+};
+
+// **[ปรับปรุง]** ฟังก์ชันสำหรับส่ง Webhook Discord (รับ Webhook URL ที่ถูกต้อง)
+async function sendDiscordWebhook(req, username, action, success = true, error = null) {
+    let webhookUrl;
+    
+    // กำหนด Webhook URL ตาม Action และ Status
+    if (action === 'LOGIN') {
+        webhookUrl = success ? WEBHOOK_URLS.LOGIN_SUCCESS : WEBHOOK_URLS.LOGIN_FAILURE;
+    } else if (action === 'LOGOUT') {
+        // สำหรับ Logout ใช้อันเดียวทั้ง Success/Failure (ตามโจทย์ต้องการแยกแค่ Login/Logout/Login Failed)
+        webhookUrl = WEBHOOK_URLS.LOGOUT; 
+    } else {
+        return; // ไม่ต้องดำเนินการใดๆ หาก Action ไม่ถูกต้อง
+    }
+
+    if (!webhookUrl) {
+        console.error(`❌ Webhook URL is missing for action: ${action} (Success: ${success})`);
+        return;
+    }
+
+    const timestamp = new Date().toISOString();
+    let color;
+    let title;
+    let fields = [];
+
+    // 1. Resolved IP: IP Address ที่ Express ประมวลผลว่าเป็น IP ผู้ใช้จริง
+    const resolvedIp = req.ip || 'N/A (Localhost/Unknown)';
+    
+    // 2. Raw X-Forwarded-For: Header ดิบที่แสดง IP Chain หากมี Proxy หลายชั้น
+    const rawForwardedFor = req.headers['x-forwarded-for'] || 'Not applicable / Direct connection';
+
+    // ดึงข้อมูลพื้นฐานจาก Request Header
+    const userAgent = req.headers['user-agent'] || 'Unknown Agent';
+    const referer = req.headers['referer'] || 'None';
+    
+    // ข้อมูลพื้นฐานที่ใช้ร่วมกันใน Embed
+    fields.push({ name: '👤 Username', value: `\`${username}\``, inline: true });
+    fields.push({ name: '🔥 Overall Status', value: success ? '**SUCCESS**' : '**FAILED**', inline: true });
+    fields.push({ name: '⏰ Time (Local)', value: `\`${new Date().toLocaleTimeString('th-TH')}\``, inline: true });
+    
+    // แสดง IP ทั้งสองแบบเพื่อให้แม่นยำที่สุด
+    fields.push({ name: '🌐 Resolved IP (Req.IP)', value: `\`${resolvedIp}\``, inline: false }); 
+    fields.push({ name: '🔗 X-Forwarded-For (Raw)', value: `\`${rawForwardedFor}\``, inline: false });
+    
+    fields.push({ name: '💻 User-Agent (Browser)', value: `\`${userAgent}\``, inline: false });
+    
+    
+    if (action === 'LOGIN') {
+        color = success ? COLORS.SUCCESS : COLORS.FAILURE; 
+        title = success ? '✅ User Login Successful' : '❌ User Login Failed';
+        
+        // เพิ่มรายละเอียดสำหรับการ Login
+        if (!success) {
+            fields.push({ name: '❗ Attempted URL', value: `\`${referer}\``, inline: false });
+        }
+    } else if (action === 'LOGOUT') {
+        color = COLORS.LOGOUT; 
+        title = '🚪 User Logout'; 
+        
+        // เพิ่มรายละเอียดสำหรับการ Logout
+        fields.push({ name: 'Session Status', value: success ? '**Destroyed**' : '**Error**', inline: true });
+    } else {
+        return; 
+    }
+
+    const embed = {
+        title: title,
+        color: color, 
+        timestamp: timestamp,
+        fields: fields,
+        footer: {
+            text: 'System Audit Log | Switch City',
+        }
+    };
+
+    if (error) {
+        embed.fields.push({ name: '⚠️ Error/Detail', value: `\`${error}\``, inline: false });
+    }
+
+    const payload = {
+        username: 'Admin Panel Log',
+        avatar_url: 'https://i.imgur.com/K1Y9N89.png', 
+        embeds: [embed],
+    };
+
+    try {
+        // **[เปลี่ยนไปใช้ webhookUrl ที่ถูกกำหนดมา]**
+        await axios.post(webhookUrl, payload, { 
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        console.log(`✅ Discord Webhook sent to specific channel for ${action}: ${username}`);
+
+    } catch (err) {
+        if (err.response) {
+            const status = err.response.status;
+            const data = err.response.data;
+            console.error(`❌ Discord Webhook failed with status: ${status}. Response Data:`, data);
+        } else if (err.request) {
+            console.error('❌ Error sending Discord Webhook: No response received.', err.message);
+        } else {
+            console.error('❌ Error setting up request to Discord Webhook:', err.message);
+        }
+    }
+}
+// *********************************************************
+
+// ... โค้ดส่วน loadUsers, saveUsers, USERS, DEFAULT_USERS, Middleware, และ Routes ทั้งหมด (ไม่มีการเปลี่ยนแปลงในส่วนนี้) ...
+
+const USERS_FILE = path.join(__dirname, 'users.json');
+const DEFAULT_USERS = {
+    'admin': { password: 'switchadminsusu', forceChangePass: true }, 
+    'moderator_a': { password: 'switchdiwaa159357', forceChangePass: false },
+    'support_team': { password: 'switchadminsusu888', forceChangePass: true }, 
+    'tester_01': { password: 'switchdiwaa951357', forceChangePass: false },
+};
+let USERS = {}; 
+function loadUsers() {
+    try {
+        if (!fs.existsSync(USERS_FILE)) {
+            console.log('ไฟล์ users.json ไม่พบ, สร้างไฟล์ใหม่ด้วยข้อมูลเริ่มต้น.');
+            fs.writeFileSync(USERS_FILE, JSON.stringify(DEFAULT_USERS, null, 4), 'utf8');
+            return DEFAULT_USERS;
+        }
+        const data = fs.readFileSync(USERS_FILE, 'utf8');
+        return Object.assign({}, JSON.parse(data)); 
+    } catch (error) {
+        console.error('⚠️ Error ในการโหลดหรือสร้างไฟล์ users.json: ใช้ข้อมูลเริ่มต้นแทน', error);
+        return DEFAULT_USERS;
+    }
+}
+function saveUsers() {
+    fs.writeFile(USERS_FILE, JSON.stringify(USERS, null, 4), 'utf8', (err) => {
+        if (err) {
+            console.error('❌ Error ในการบันทึกข้อมูลผู้ใช้ลงใน users.json:', err);
+        } else {
+            console.log('✅ บันทึกข้อมูลผู้ใช้ (users.json) สำเร็จ.');
+        }
+    });
+}
+USERS = loadUsers();
+
+// --- Middleware Setup ---
+app.use(express.urlencoded({ extended: true })); 
+// [FIX 1] เปลี่ยนจาก 1 เป็น true เพื่อรองรับ Reverse Proxy ใน Production
+app.set('trust proxy', true); 
+
+app.use(session({
+    secret: 'YOUR_VERY_SECURE_SECRET_KEY_SWITCH_CITY_ADMIN', 
+    resave: false,
+    saveUninitialized: true,
+    cookie: { 
+        maxAge: 1000 * 60 * 60, 
+        httpOnly: true,         
+    } 
+}));
+
+// ***************************************************************
+// *** [การแก้ไขที่สำคัญที่สุด]: app.use(express.static) ถูกย้ายไปอยู่ด้านล่างสุดแล้ว ***
+// ***************************************************************
+
+const checkAuth = (req, res, next) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.forceChangePass && req.path !== '/change-password' && req.path !== '/logout') {
+            return res.redirect('/change-password');
+        }
+        next(); 
+    } else {
+        res.redirect('/login'); 
+    }
+};
+
+// --- Routes ที่ต้องมีการตรวจสอบสิทธิ์ (Auth Required Routes) ---
+
+app.get('/change-password', checkAuth, (req, res) => {
+    if (!req.session.forceChangePass) {
+        return res.redirect('/');
+    }
+    try {
+        res.sendFile(path.join(__dirname, 'public', 'change_password.html'));
+    } catch (err) {
+        res.status(500).send('Server Error: Could not load change_password.html. Please ensure file exists in the /public folder.');
+    }
+});
+
+app.post('/change-password', checkAuth, (req, res) => {
+    const { new_password, confirm_password } = req.body;
+    const username = req.session.username;
+    
+    if (!req.session.forceChangePass) {
+        return res.redirect('/');
+    }
+
+    if (new_password !== confirm_password) {
+        return res.send('<script>alert("รหัสผ่านใหม่ไม่ตรงกัน!"); window.location.href="/change-password";</script>');
+    }
+    
+    if (new_password.length < 6) { 
+        return res.send('<script>alert("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร!"); window.location.href="/change-password";</script>');
+    }
+
+    if (USERS[username]) {
+        USERS[username].password = new_password; 
+        USERS[username].forceChangePass = false; 
+        req.session.forceChangePass = false; 
+        saveUsers(); 
+    }
+
+    res.send('<script>alert("✅ เปลี่ยนรหัสผ่านสำเร็จ! เข้าสู่ Dashboard"); window.location.href="/";</script>');
+});
+
+
+app.get('/', checkAuth, (req, res) => {
+    // [FIX 2] เพิ่ม Anti-Caching Headers เพื่อป้องกันเบราว์เซอร์แคชหน้าหลัก
+    res.header('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.header('Pragma', 'no-cache');
+    res.header('Expires', '0');
+
+    try {
+        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    } catch (err) {
+        res.status(500).send('Server Error: Could not load index.html. Please ensure file exists in the /public folder.');
+    }
+});
+
+app.get('/logout', checkAuth, (req, res) => { 
+    const username = req.session.username || 'N/A';
+    
+    let webhookSent = false;
+    
+    sendDiscordWebhook(req, username, 'LOGOUT', true, null) // Logout ใช้ URL: LOGOUT
+        .then(() => { webhookSent = true; })
+        .catch(() => { /* continue even if webhook fails */ });
+    
+    req.session.destroy(err => {
+        if (err) {
+            if (!webhookSent) {
+                sendDiscordWebhook(req, username, 'LOGOUT', false, `Session destruction failed: ${err.message}`); // Logout ล้มเหลว ใช้ URL: LOGOUT
+            }
+            return res.status(500).send('Could not log out.');
+        }
+        res.redirect('/login'); 
+    });
+});
+
+// --- Routes ที่ไม่ต้องตรวจสอบสิทธิ์ (Public Routes) ---
+
+app.get('/login', (req, res) => {
+    if (req.session.isLoggedIn) {
+        if (req.session.forceChangePass) {
+             return res.redirect('/change-password');
+        }
+        return res.redirect('/');
+    } 
+    const errorMsg = req.query.error === 'invalid' ? 
+        '<p class="text-danger text-center mt-3 fw-bold" id="loginError">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง!</p>' : 
+        '';
+    try {
+        const data = fs.readFileSync(path.join(__dirname, 'public', 'login.html'), 'utf8');
+        // ตรวจสอบว่า `modifiedHtml` ยังคงทำงานได้ดีกับ `login.html` ของคุณหรือไม่
+        const modifiedHtml = data.replace('', errorMsg);
+        res.send(modifiedHtml);
+    } catch (err) {
+        res.status(500).send('Server Error: Could not load login.html. Please ensure file exists in the /public folder.');
+    }
+});
+
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    const user = USERS[username];
+
+    if (user && user.password === password) { 
+        req.session.isLoggedIn = true;
+        req.session.username = username;
+        req.session.forceChangePass = user.forceChangePass; 
+        
+        sendDiscordWebhook(req, username, 'LOGIN', true, null); // Login สำเร็จ ใช้ URL: LOGIN_SUCCESS
+
+        if (user.forceChangePass) {
+            return res.redirect('/change-password');
+        }
+
+        res.redirect('/');
+    } else {
+        const errorDetail = `Invalid credentials attempt for user: ${username}`;
+        sendDiscordWebhook(req, username || 'UNKNOWN', 'LOGIN', false, errorDetail); // Login ล้มเหลว ใช้ URL: LOGIN_FAILURE
+        
+        return res.redirect('/login?error=invalid');
+    }
+});
+
+// ******************************************************************************************
+// *** [FIX 3: ตำแหน่งที่ถูกต้อง] ย้าย app.use(express.static) มาไว้ที่ส่วนท้ายสุดของ Route ***
+// ******************************************************************************************
+// Express จะพยายาม match Route ด้านบนก่อน ถ้าไม่ตรง จึงจะเสิร์ฟไฟล์ Static
+app.use(express.static(path.join(__dirname, 'public')));
+
+
+// Start Server
+app.listen(port, () => {
+    console.log(`Server is running at http://localhost:${port}`);
+    console.log('--- USER DATA INITIALIZED ---');
+    console.log(`ข้อมูลผู้ใช้ถูกโหลดจาก: ${USERS_FILE}`);
+    console.log('-----------------------------');
+});
